@@ -122,4 +122,4 @@ main = do
             "005300000",
             "006100900"]
     displayGrid g
-    displayGrid $ head $ solve g
+    mapM_ displayGrid (solve g)
