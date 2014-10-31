@@ -1,6 +1,7 @@
+import Data.List (intersperse)
+
 type Matrix a = [Row a]
 type Row a = [a]
-
 type Grid = Matrix Digit
 type Digit = Char
 
@@ -52,32 +53,32 @@ choice d = if blank d then digits else return d
 expand :: Matrix [Digit] -> [Grid]
 expand = cp . map cp
 
-expand1 :: Matrix [Digit] -> [Matrix [Digit]]
-expand1 rows =
-    [rows1 ++ [row1 ++ [c]:row2] ++ rows2 | c <- cs]
-    where
-        (rows1, row:rows2) = break (any smallest) rows
-        (row1, cs:row2) = break smallest row
-        smallest cs = length cs == n
-        n = minimum (counts rows)
-
-counts :: Matrix [Digit] -> [Int]
-counts = filter (/= 1) . map length . concat
-
-complete :: Matrix [Digit] -> Bool
-complete = all (all single)
-
-single :: [a] -> Bool
-single [_] = True
-single _ = False
-
-safe :: Matrix [Digit] -> Bool
-safe m =
-    all ok (rows m) &&
-    all ok (cols m) &&
-    all ok (boxs m)
-    where
-        ok row = nodups [x | [x] <- row]
+--expand1 :: Matrix [Digit] -> [Matrix [Digit]]
+--expand1 rows =
+--    [rows1 ++ [row1 ++ [c]:row2] ++ rows2 | c <- cs]
+--    where
+--        (rows1, row:rows2) = break (any smallest) rows
+--        (row1, cs:row2) = break smallest row
+--        smallest cs = length cs == n
+--        n = minimum (counts rows)
+--
+--counts :: Matrix [Digit] -> [Int]
+--counts = filter (/= 1) . map length . concat
+--
+--complete :: Matrix [Digit] -> Bool
+--complete = all (all single)
+--
+--single :: [a] -> Bool
+--single [_] = True
+--single _ = False
+--
+--safe :: Matrix [Digit] -> Bool
+--safe m =
+--    all ok (rows m) &&
+--    all ok (cols m) &&
+--    all ok (boxs m)
+--    where
+--        ok row = nodups [x | [x] <- row]
 
 cp :: [[a]] -> [[a]]
 cp [] = [[]]
@@ -104,10 +105,15 @@ many f x =  if x == x' then x else many f x'
 
 displayGrid :: Grid -> IO ()
 displayGrid g =
-    mapM_ putStrLn g'
+    mapM_ putStrLn $ formatGroupedGrid gg
     where
-        g' = map (map replaceZeros) g
-        replaceZeros = \d -> if blank d then ' ' else d
+        gg = group (map group g)
+        formatGroupedGrid = concat . insertDividerLines . formatGroupOfThreeRows
+        formatGroupOfThreeRows = map makeThreeLines
+        insertDividerLines = intersperse ["---+---+---"]
+        makeThreeLines = map makeLine
+        makeLine = concat . intersperse "|" . map replaceZeros
+        replaceZeros = map (\d -> if blank d then ' ' else d)
 
 main :: IO ()
 main = do
@@ -121,5 +127,8 @@ main = do
             "400000056",
             "005300000",
             "006100900"]
+    putStrLn "\nStarting grid:\n"
     displayGrid g
+    putStrLn "\nSolution:\n"
     mapM_ displayGrid (solve g)
+    putStrLn ""
