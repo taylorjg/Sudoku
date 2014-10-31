@@ -1,4 +1,4 @@
-import Data.List (intersperse)
+import Data.List (intercalate)
 
 type Matrix a = [Row a]
 type Row a = [a]
@@ -107,13 +107,13 @@ displayGrid :: Grid -> IO ()
 displayGrid g =
     mapM_ putStrLn $ formatGroupedGrid gg
     where
-        gg = group (map group g)
-        formatGroupedGrid = concat . insertDividerLines . formatGroupOfThreeRows
-        formatGroupOfThreeRows = map makeThreeLines
-        insertDividerLines = intersperse ["---+---+---"]
-        makeThreeLines = map makeLine
-        makeLine = concat . intersperse "|" . map replaceZeros
-        replaceZeros = map (\d -> if blank d then ' ' else d)
+        gg = group $ map group g
+        formatGroupedGrid = insertDividerLines . formatGroupsOfThreeRows
+        formatGroupsOfThreeRows = map formatThreeRows
+        formatThreeRows = map formatOneRow
+        formatOneRow = replaceZerosWithSpaces . intercalate "|"
+        replaceZerosWithSpaces = map (\d -> if blank d then ' ' else d)
+        insertDividerLines = intercalate ["---+---+---"]
 
 main :: IO ()
 main = do
